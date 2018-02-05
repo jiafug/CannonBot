@@ -1,8 +1,8 @@
 --- module (NICHT AENDERN!)
 module CannonBot where
 --- imports (NICHT AENDERN!)
-import Data.Char
-import Util
+import           Data.Char
+import           Util
 
 --- external signatures (NICHT AENDERN!)
 getMove :: String -> String
@@ -21,7 +21,6 @@ split (c:cs)
  where
    rest = split cs
 
---- GHC Commands---
 splitted = split "4W5/1w1w1w1w1w/1w1w1w1w1w/1w1w1w1w1w///b1b1b1b1b1/b1b1b1b1b1/b1b1b1b1b1/7B2 w"
 
 selectPlayer :: [String] -> Player
@@ -31,27 +30,39 @@ data Player = Black | White
 instance Show Player where
  show Black =  "Black"
  show White =  "White"
- 
---- GHC Commands---
-getPlayer = selectPlayer splitted
 
-trimLoop :: Integer -> [Int] -> String
+trimLoop :: Int -> [Int] -> String
 trimLoop 0 l = intListToString l
-trimLoop n l = trimLoop (n-1) ([1] ++ l) 
+trimLoop n l = trimLoop (n-1) ([1] ++ l)
 
 intListToString :: [Int] -> String
 intListToString = map (\i -> chr (i + ord '0'))
 
---- GHC Commands---
 stringSpace x = trimLoop x []
 
+charToString :: Char -> String
+charToString = (:[])
+
+trimMapper :: String -> String
+trimMapper c = if c=="-" then stringSpace 10
+  else if (c /= "w" && c /= "W" && c /= "b" && c /= "B") then stringSpace (digitToInt (head c))
+    else c
+
+stringReplacer :: String -> String
+stringReplacer [] = []
+stringReplacer x = trimMapper (charToString (head x)) ++ (stringReplacer (tail x))
+
+fillEmpty :: String -> String
+fillEmpty [] = "-"
+fillEmpty s  = s
+
+doFillUp = map fillEmpty splitted
+doSomething = map stringReplacer doFillUp
+
+dropPlayer :: [String] -> Int -> [String]
+dropPlayer xs 0 = []
+dropPlayer xs n = [head xs] ++ dropPlayer (tail xs) (n-1)
+
 --- GHC Commands---
-doSomething = map trimString splitted
-
-trimMapper :: Char -> String
-trimMapper c = if (c /= 'w' && c /= 'W' && c /= 'b' && c /= 'B') then stringSpace (toInteger (digitToInt c)) else return c
-
----Hier weitermachen---
-trimString :: String -> String
-trimString s =  map (\x -> trimMapper x)
-
+getPlayer = selectPlayer splitted
+finalList = dropPlayer doSomething 10
